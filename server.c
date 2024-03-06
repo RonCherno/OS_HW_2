@@ -201,6 +201,12 @@ int main(int argc, char *argv[])
                     continue;   
                 }
             }
+            else{
+                if (waiting_tasks->c_size+running_tasks->c_size >= queue_max_size){     //check what to do in this case
+                    Close(connfd);
+                    continue;
+                }
+            }
         }
 
         add (waiting_tasks, connfd);
