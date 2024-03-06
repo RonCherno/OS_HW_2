@@ -88,6 +88,19 @@
         free (q);
     }
 
+    void drop_random (struct Queue* waiting_tasks){
+    int drop_count = (waiting_tasks->c_size+1)/2;
+    for(int i = 0; i<drop_count; i++) {
+        if(waiting_tasks->c_size == 0){
+            break;
+        }    
+        int random_index = rand() % waiting_tasks->c_size;
+        Close(waiting_tasks->c_queue[random_index]);        //not good
+        remove_by_index(waiting_tasks, random_index);
+        cond_signal (&c2);          //think about it
+    }
+}
+
 
 struct thread_args{
     struct Queue* waiting_tasks;
@@ -236,15 +249,3 @@ void thread_routine(struct thread_args* args){
     }
 }
 
-void drop_random (struct Queue* waiting_tasks){
-    int drop_count = (waiting_tasks->c_size+1)/2;
-    for(int i = 0; i<drop_count; i++) {
-        if(waiting_tasks->c_size == 0){
-            break;
-        }    
-        int random_index = rand() % waiting_tasks->c_size;
-        Close(waiting_tasks->c_queue[random_index]);        //not good
-        remove_by_index(waiting_tasks, random_index);
-        cond_signal (&c2);          //think about it
-    }
-}
