@@ -13,8 +13,16 @@
 
 
 
+    struct task_info{
+        int id;
+        struct timeval* arrived;
+    };
+
+
+
+
     struct Queue{
-        int* c_queue;
+        struct task_info* c_queue;
         int c_queue_max_size;
         int c_first;
         int c_last;
@@ -24,14 +32,14 @@
    struct Queue* create_queue (int n){
         struct Queue* q = (struct Queue*)malloc(sizeof(struct Queue));
         q->c_queue_max_size = n;
-        q->c_queue = (int*)malloc(sizeof(int)*q->c_queue_max_size);
+        q->c_queue = (struct task_info*)malloc(sizeof(struct task_info)*q->c_queue_max_size);
         q->c_first = 0;
         q->c_last = 0;
         q->c_size = 0;
         return q;
     }
 
-    void add (struct Queue* q, int val){
+    void add (struct Queue* q, struct task_info val){           //think about using pointers
         if (q->c_size<q->c_queue_max_size){
             q->c_queue[q->c_last] = val;
             q->c_last = (q->c_last+1)%q->c_queue_max_size;
@@ -74,12 +82,12 @@
         }
     }
 
-    int top (struct Queue* q){
+    struct task_info top (struct Queue* q){
         if (q->c_size>0){
             return q->c_queue[q->c_first];
         }
         else{
-            return -1;              //other error value?
+            printf ("Invalid, queue is empty");              //other error value?
         }
     }
 
@@ -92,10 +100,11 @@
     int drop_count = (waiting_tasks->c_size+1)/2;
     for(int i = 0; i<drop_count; i++) {
         if(waiting_tasks->c_size == 0){
+            printf ("Invalid, queue is empty");              //other error value?
             break;
         }    
         int random_index = rand() % waiting_tasks->c_size;
-        Close(waiting_tasks->c_queue[random_index]);        //not good
+        Close(waiting_tasks->c_queue[random_index].id);        //not good
         remove_by_index(waiting_tasks, random_index);
         cond_signal (&c2);          //think about it
     }
@@ -106,6 +115,7 @@ struct thread_args{
     struct Queue* waiting_tasks;
     struct Queue* running_tasks;
     char* schedalg;
+    int id
 };
 
 
@@ -152,15 +162,16 @@ int main(int argc, char *argv[])
     struct Queue* waiting_tasks = create_queue (queue_max_size);
     struct Queue* running_tasks = create_queue (threads_num);
 
-    struct thread_args* args = (struct thread_args*)malloc(sizeof(struct thread_args));
-    args->waiting_tasks = waiting_tasks;
-    args->running_tasks = running_tasks;
-    args->schedalg = schedalg;
-
-
-    pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t)*threads_num);
+    pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t)*threads_num);     //is needed?
 
     for (int i = 0; i<threads_num; i++){
+
+        struct thread_args* args = (struct thread_args*)malloc(sizeof(struct thread_args));         //remember to free
+        args->waiting_tasks = waiting_tasks;
+        args->running_tasks = running_tasks;
+        args->schedalg = schedalg;
+        args->id = i;
+
         Pthread_Create(&(threads[i]), NULL, thread_routine, args);
     }
 
@@ -172,6 +183,10 @@ int main(int argc, char *argv[])
     while (1) {
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
+
+        struct timeval arrived;
+        gettimeofday(&arrived, NULL);            //change the null, make wrap function
+        struct task_info to_add = {connfd, &arrived};
 
         mutex_lock(&m);
         if (waiting_tasks->c_size+running_tasks->c_size >= queue_max_size){
@@ -185,7 +200,7 @@ int main(int argc, char *argv[])
                 continue;
             }
             else if (strcasecmp(schedalg, "dh")){
-                int fd_for_remove = top (waiting_tasks);
+                int fd_for_remove = (top(waiting_tasks)).id;
                 Close(fd_for_remove);
                 pop (waiting_tasks);
             }
@@ -208,8 +223,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-
-        add (waiting_tasks, connfd);
+        add (waiting_tasks, to_add);
         cond_signal (&c1);          //add wrap function?
         mutex_unlock (&m);          //add wrap function?
     }
@@ -223,25 +237,43 @@ int main(int argc, char *argv[])
     delete_queue(waiting_tasks);
     delete_queue(running_tasks);
     free (threads);
-    free (args);
+ //   free (args);
 }
 
 
 
 
 void thread_routine(struct thread_args* args){
+    
+        int stat_req = 0;
+        int dynm_req = 0;
+        int total_req = 0;
+        struct Threads_stats stats = {args->id, stat_req, dynm_req, total_req};
+        struct timeval dispatch;
+        struct timeval curr_time;
+
     while (1){
         mutex_lock (&m);                  //add wrap function?
         while (args->waiting_tasks->c_size==0){
             cond_wait (&c1, &m);          //add wrap function?
         }
-        int curr_task = top(args->waiting_tasks);
+        struct task_info curr_task = top(args->waiting_tasks);
+        int curr_task_id = curr_task.id;
+
+        gettimeofday(&curr_time, NULL);            //change the null, make wrap function
+        dispatch.tv_sec = curr_time.tv_sec - curr_task.arrived->tv_sec;
+        dispatch.tv_usec = curr_time.tv_usec - curr_task.arrived->tv_usec;
+        
+        //add a time stamp and others statistics
+
         pop (args->waiting_tasks);
         add (args->running_tasks, curr_task);
         mutex_unlock (&m);             //add wrap function?
 
-        requestHandle(curr_task);
-	    Close(curr_task);
+        requestHandle(curr_task_id, *curr_task.arrived, dispatch, &stats);
+	    Close(curr_task_id);
+
+        total_req++;
 
         mutex_lock (&m);                    //add wrap function?
         pop (args->running_tasks);                  //should use remove_value(args->running_tasks, curr_task)
