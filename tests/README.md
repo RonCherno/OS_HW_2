@@ -85,6 +85,19 @@ FAILED test_drop_tail.py::test_available_after_load[4-8-10-10-dispatches4] - Ass
 ============================================================= 30 failed, 100 passed in 248.23s (0:04:08) =============================================================
 
 
+python3 -m pytest -n auto test_block.py -k "test_sanity"        //passed
+python3 -m pytest -n auto test_block.py -k "test_load"          //failed 5/5
+
+
+
+
+python3 -m pytest -n auto test_drop_head.py -k "test_sanity"        //passed
+python3 -m pytest -n auto test_drop_head.py -k "test_load"          //failed 5/6
+python3 -m pytest -n auto test_drop_head.py -k "test_available_after_load"          //failed 4/5
+
+
+
+
 
 
 python3 -m pytest -n auto test_segel.py
