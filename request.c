@@ -206,6 +206,8 @@ void requestHandle(int fd, struct timeval arrival, struct timeval dispatch, thre
 
 	printf("%s %s %s\n", method, uri, version);
 
+	(t_stats->total_req)++;
+
 	if (strcasecmp(method, "GET")) {
 		requestError(fd, method, "501", "Not Implemented", "OS-HW3 Server does not implement this method", arrival, dispatch, t_stats);
 		return;
