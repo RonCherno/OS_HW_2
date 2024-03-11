@@ -315,6 +315,9 @@ int main(int argc, char *argv[])
                 while (waiting_tasks->c_size+running_tasks->c_size > 0){
                     pthread_cond_wait (&c3, &m);        //add wrap function?
                 }
+                Close(connfd);
+                pthread_mutex_unlock (&m);          //add wrap function?
+                continue;
             }
             else if (strcasecmp(schedalg, "random")==0){
                 if (waiting_tasks->c_size!=0){
