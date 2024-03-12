@@ -15,7 +15,7 @@
 
     struct task_info{
         int id;
-        struct timeval* arrived;
+        struct timeval arrived;
     };
 
 
@@ -110,7 +110,9 @@
         }
         else{
             printf ("Invalid, queue is empty");              //other error value?
-            struct task_info error_return = {-1, NULL};
+            struct timeval t;
+            gettimeofday(&t, NULL);            //change the null, make wrap function
+            struct task_info error_return = {-1, t};
             return (error_return);
         }
     }
@@ -195,8 +197,7 @@ void* thread_routine(void* arg){
         int dynm_req = 0;
         int total_req = 0;
         struct Threads_stats stats = {args->id, stat_req, dynm_req, total_req};
-        struct timeval dispatch;
-        struct timeval curr_time;
+
 
     while (1){
         pthread_mutex_lock (&m);                  //add wrap function?
@@ -206,17 +207,24 @@ void* thread_routine(void* arg){
         struct task_info curr_task = top(args->waiting_tasks);
         int curr_task_id = curr_task.id;
 
-        gettimeofday(&curr_time, NULL);            //change the null, make wrap function
-        dispatch.tv_sec = curr_time.tv_sec - curr_task.arrived->tv_sec;
-        dispatch.tv_usec = curr_time.tv_usec - curr_task.arrived->tv_usec;
+
         
-        //add a time stamp and others statistics
+
 
         pop (args->waiting_tasks);
         add (args->running_tasks, curr_task);
         pthread_mutex_unlock (&m);             //add wrap function?
 
-        requestHandle(curr_task_id, *curr_task.arrived, dispatch, &stats);
+        struct timeval dispatch;
+        struct timeval curr_time;
+        
+        gettimeofday(&curr_time, NULL);            //change the null, make wrap function
+        dispatch.tv_sec = curr_time.tv_sec - curr_task.arrived.tv_sec;
+        dispatch.tv_usec = curr_time.tv_usec - curr_task.arrived.tv_usec;
+
+    //    timersub(&dispatch, curr_task.arrived, &curr_time);
+
+        requestHandle(curr_task_id, curr_task.arrived, dispatch, &stats);
 	    Close(curr_task_id);
 
         // stats.total_req++;
@@ -283,8 +291,8 @@ int main(int argc, char *argv[])
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
 
         struct timeval arrived;
-        gettimeofday(&arrived, NULL);            //change the null, make wrap function
-        struct task_info to_add = {connfd, &arrived};
+        gettimeofday(&arrived, NULL);
+        struct task_info to_add = {connfd, arrived};
 
         pthread_mutex_lock(&m);
         if (waiting_tasks->c_size+running_tasks->c_size >= queue_max_size){
