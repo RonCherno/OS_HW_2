@@ -219,10 +219,10 @@ void* thread_routine(void* arg){
         struct timeval curr_time;
         
         gettimeofday(&curr_time, NULL);            //change the null, make wrap function
-        dispatch.tv_sec = curr_time.tv_sec - curr_task.arrived.tv_sec;
-        dispatch.tv_usec = curr_time.tv_usec - curr_task.arrived.tv_usec;
+        // dispatch.tv_sec = curr_time.tv_sec - curr_task.arrived.tv_sec;
+        // dispatch.tv_usec = curr_time.tv_usec - curr_task.arrived.tv_usec;
 
-    //    timersub(&dispatch, curr_task.arrived, &curr_time);
+        timersub(&curr_time, &curr_task.arrived, &dispatch);            //add wraper
 
         requestHandle(curr_task_id, curr_task.arrived, dispatch, &stats);
 	    Close(curr_task_id);

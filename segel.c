@@ -588,3 +588,26 @@ int Open_listenfd(int port)
 }
 
 
+
+
+
+
+
+
+
+
+/*********************************************************************
+ * Time functions
+ **********************************************************************/
+
+/* $begin timersub wrapper */
+// int Timersub(struct timeval* curr_time, struct timeval* curr_task, struct timeval* dispatch){
+    
+//     int return_value = timersub(curr_time, curr_task, dispatch);
+//     if (return_value != 0){
+//         unix_error("pthread_create error");
+//     }
+//     return return_value;
+// }
+/* $end timersub wrapper */
+
