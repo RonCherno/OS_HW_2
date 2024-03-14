@@ -123,6 +123,21 @@ int open_listenfd(int portno);
 
 /* Wrappers for client/server helper functions */
 int Open_clientfd(char *hostname, int port);
-int Open_listenfd(int port); 
+int Open_listenfd(int port);
+
+/* additional Wrappers */
+int GetTimeOfDay(struct timeval *restrict tv, struct timezone *restrict tz);
+
+
+/* mutex and cond Wrappers */
+int Pthread_mutex_lock(pthread_mutex_t *mutex);
+int Pthread_mutex_unlock(pthread_mutex_t *mutex);
+int Pthread_cond_destroy(pthread_cond_t *cond);
+int Pthread_cond_init(pthread_cond_t *restrict cond, const pthread_condattr_t *restrict attr);
+int Pthread_mutex_destroy(pthread_mutex_t *mutex);
+int Pthread_mutex_init(pthread_mutex_t *restrict mutex, const pthread_mutexattr_t *restrict attr);
+int Pthread_cond_broadcast(pthread_cond_t *cond);
+int Pthread_cond_signal(pthread_cond_t *cond);
+int Pthread_cond_wait(pthread_cond_t *restrict cond, pthread_mutex_t *restrict mutex);
 
 #endif /* __CSAPP_H__ */

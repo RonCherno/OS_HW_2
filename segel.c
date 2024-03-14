@@ -600,14 +600,139 @@ int Open_listenfd(int port)
  * Time functions
  **********************************************************************/
 
-/* $begin timersub wrapper */
-// int Timersub(struct timeval* curr_time, struct timeval* curr_task, struct timeval* dispatch){
+/* $begin gettimeofday wrapper */
+int GetTimeOfDay(struct timeval *restrict tv, struct timezone *restrict tz){
     
-//     int return_value = timersub(curr_time, curr_task, dispatch);
-//     if (return_value != 0){
-//         unix_error("pthread_create error");
-//     }
-//     return return_value;
-// }
-/* $end timersub wrapper */
+    int return_value = gettimeofday(tv, tz);
+    if (return_value != 0){
+        unix_error("gettimeofday error");
+    }
+    return return_value;
+}
+/* $end gettimeofday wrapper */
 
+
+
+/*********************************************************************
+ * Mutex and Cond functions
+ **********************************************************************/
+
+/* $begin pthread_mutex_lock wrapper */
+
+int Pthread_mutex_lock(pthread_mutex_t *mutex){
+    int return_value = pthread_mutex_lock(mutex);
+    if (return_value != 0){
+        unix_error("pthread_mutex_lock error");
+    }
+    return return_value;
+}
+
+/* $end pthread_mutex_lock wrapper */
+
+
+
+
+/* $begin pthread_mutex_unlock wrapper */
+
+int Pthread_mutex_unlock(pthread_mutex_t *mutex){
+    int return_value = pthread_mutex_unlock(mutex);
+    if (return_value != 0){
+        unix_error("pthread_mutex_unlock error");
+    }
+    return return_value;
+}
+
+/* $end pthread_mutex_unlock wrapper */
+
+
+/* $begin Pthread_cond_destroy wrapper */
+
+int Pthread_cond_destroy(pthread_cond_t *cond){
+    int return_value = pthread_cond_destroy(cond);
+    if (return_value != 0){
+        unix_error("Pthread_cond_destroy error");
+    }
+    return return_value;
+}
+
+/* $end Pthread_cond_destroy wrapper */
+
+
+
+/* $begin Pthread_cond_init wrapper */
+
+int Pthread_cond_init(pthread_cond_t *restrict cond, const pthread_condattr_t *restrict attr){
+    int return_value = pthread_cond_init(cond, attr);
+    if (return_value != 0){
+        unix_error("Pthread_cond_init error");
+    }
+    return return_value;
+}
+
+/* $end Pthread_cond_init wrapper */
+
+
+
+
+/* $begin pthread_mutex_destroy wrapper */
+
+int Pthread_mutex_destroy(pthread_mutex_t *mutex){
+    int return_value = pthread_mutex_destroy(mutex);
+    if (return_value != 0){
+        unix_error("pthread_mutex_destroy error");
+    }
+    return return_value;
+}
+
+/* $end pthread_mutex_destroy wrapper */
+
+
+/* $begin pthread_mutex_init wrapper */
+
+int Pthread_mutex_init(pthread_mutex_t *restrict mutex, const pthread_mutexattr_t *restrict attr){
+    int return_value = pthread_mutex_init(mutex, attr);
+    if (return_value != 0){
+        unix_error("pthread_mutex_init error");
+    }
+    return return_value;
+}
+
+/* $end pthread_mutex_init wrapper */
+
+
+/* $begin Pthread_cond_broadcast wrapper */
+
+int Pthread_cond_broadcast(pthread_cond_t *cond){
+    int return_value = pthread_cond_broadcast(cond);
+    if (return_value != 0){
+        unix_error("pthread_cond_broadcast error");
+    }
+    return return_value;
+}
+
+/* $end Pthread_cond_broadcast wrapper */
+
+
+/* $begin Pthread_cond_signal wrapper */
+
+int Pthread_cond_signal(pthread_cond_t *cond){
+    int return_value = pthread_cond_signal(cond);
+    if (return_value != 0){
+        unix_error("pthread_cond_signal error");
+    }
+    return return_value;
+}
+
+/* $end Pthread_cond_signal wrapper */
+
+/* $begin Pthread_cond_wait wrapper */
+
+int Pthread_cond_wait(pthread_cond_t *restrict cond, pthread_mutex_t *restrict mutex){
+    int return_value = pthread_cond_wait(cond, mutex);
+    if (return_value != 0){
+        unix_error("pthread_cond_wait error");
+    }
+    return return_value;
+}
+
+/* $end Pthread_cond_wait wrapper */
